@@ -2,6 +2,9 @@
 SUBJECTS = ["Матан", "Прога", "История", "Физ-ра"]
 EXAM_FORMS = ["Устный", "Письменный", "Тест"]
 
+# Функция преобразования строки в целое
+# Принимат текст введённый пользователем
+# Возвращает целое число или None
 def to_int(text):
     text = text.strip()
     try:
@@ -9,7 +12,9 @@ def to_int(text):
     except ValueError:
         return None
 
-
+# Функция преобразования строки в дробное число 
+# Принимат текст введённый пользователем
+# Возвращает дробное число или None
 def to_float(text):
     text = text.strip().replace(",", ".")
     try:
@@ -17,7 +22,11 @@ def to_float(text):
     except ValueError:
         return None
 
-
+# Функция которая проверяет, что введённое число находится в заданном диапазоне
+# value - проверяемое число
+# low - минимально допустимое значение
+# high - максимально допустимое значение
+# name - название поля для текста ошибки
 def check_range(value, low, high, name):
     if value is None:
         return f"«{name}»: нужно ввести число"
@@ -25,7 +34,9 @@ def check_range(value, low, high, name):
         return f"«{name}»: допустимо от {low} до {high}"
     return None
 
-
+# Функция которая проверяет параметры введённые пользователем
+# Принимает raw - словарь значений 
+# Возвращает params и errors
 def validate(raw):
     errors = []
 
