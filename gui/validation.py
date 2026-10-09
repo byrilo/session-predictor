@@ -21,3 +21,17 @@ print(to_float("2.5"))
 print(to_float("2,5"))
 print(to_float(" 3 "))
 print(to_float("пять"))
+
+def check_range(value, low, high, name):
+    if value is None:
+        return f"«{name}»: нужно ввести число"
+    if value < low or value > high:
+        return f"«{name}»: допустимо от {low} до {high}"
+    return None
+
+print(check_range(to_float("5"), 0, 12, "Часы"))
+print(check_range(to_float("15"), 0, 12, "Часы"))
+print(check_range(to_float("-1"), 0, 12, "Часы"))
+print(check_range(to_float("abc"), 0, 12, "Часы"))
+print(check_range(to_int("12"), 0, 12, "Часы"))
+
