@@ -1,6 +1,4 @@
-# Пока что как затычка, нужна бд
-SUBJECTS = ["Матан", "Прога", "История", "Физ-ра"]
-EXAM_FORMS = ["Устный", "Письменный", "Тест"]
+from data.subjects import SUBJECTS, SUBJECTS_DATA
 
 # Функция преобразования строки в целое
 # Принимат текст введённый пользователем
@@ -44,10 +42,6 @@ def validate(raw):
     if subject not in SUBJECTS:
         errors.append("Выберите предмет из списка")
 
-    exam_form = raw["exam_form"]
-    if exam_form not in EXAM_FORMS:
-        errors.append("Выберите форму экзамена из списка")
-
     has_debts = bool(raw["has_debts"])
 
     hours = to_float(raw["hours_per_day"])
@@ -88,20 +82,20 @@ def validate(raw):
         "total_tickets": total,       
         "learned_tickets": learned,   
         "subject": subject,
-        "exam_form": exam_form,
+        "subject_rank": SUBJECTS_DATA[subject]["rank"],
+        "exam_type": SUBJECTS_DATA[subject]["exam_type"],
         "has_debts": has_debts,
     }
     return params, []
 
 
 if __name__ == "__main__":
-    good = {"subject": "Матан", "exam_form": "Устный", "has_debts": False,
-           "hours_per_day": "3", "missed_lectures": "2", "luck": "7",
-           "total_tickets": "25", "learned_tickets": "18"}
-    bad = {"subject": "Химия", "exam_form": "Устный", "has_debts": True,
-          "hours_per_day": "3", "missed_lectures": "2", "luck": "0",
-          "total_tickets": "20", "learned_tickets": "25"}
-    
+    test1 = {"subject": "Математика", "has_debts": False,
+            "hours_per_day": "3", "missed_lectures": "2", "luck": "7",
+            "total_tickets": "25", "learned_tickets": "18"}
+    test2 = {"subject": "Химия", "has_debts": True,
+           "hours_per_day": "3", "missed_lectures": "2", "luck": "0",
+           "total_tickets": "20", "learned_tickets": "25"}
 
-    print(validate(good))
-    print(validate(bad))
+    print(validate(test1))
+    print(validate(test2))
