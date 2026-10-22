@@ -27,12 +27,11 @@ def base_score(
 ) -> float:
     difficulty, exam_type = SUBJECTS.get(subject, (3, "Экзамен"))
 
-    if exam_type == "Зачет" and missed_lectures <= 12:
-        return 0.95  # Считаем, что зачет практически гарантирован
-
-    attendance = 1.0 - min(missed_lectures / 60.0, 1.0)
+    if exam_type == "Зачет" and missed_lectures <= 6:
+        return 0.95 
+    attendance = 1.0 - min(missed_lectures / 30.0, 1.0)
     tickets = learned_tickets / max(total_tickets, 1)
-    hours = min(hours_per_day / 4.0, 1.0)
+    hours = min(hours_per_day / 6.0, 1.0)
     luck_n = max(0.0, min((luck - 1) / 9.0, 1.0))
     diff_n = (difficulty - 1) / 4.0
 
