@@ -22,10 +22,10 @@ def monte_carlo(
 
     for _ in range(simulations):
 
-        # Шаг А. Генерируем случайное значение удачи
+        #Генерируем случайное значение удачи
         luck_value = random_luck(mu=5.0, sigma=1.5)
 
-        # Шаг Б. Рассчитываем вероятность вытянуть подготовленный билет
+        #Рассчитываем вероятность вытянуть подготовленный билет
         p_ticket = calculate_ticket(
             learned=learned_tickets,
             total=total_tickets,
@@ -34,7 +34,7 @@ def monte_carlo(
             luck=luck_value
         )
 
-        # Шаг В. Передаём рассчитанную вероятность в базовую модель
+        #Передаём рассчитанную вероятность в базовую модель
         simulated_learned_tickets = p_ticket * total_tickets
 
         success_chance = base_score(
@@ -47,7 +47,7 @@ def monte_carlo(
             learned_tickets=simulated_learned_tickets
         )
 
-        # Шаг Г. Моделируем результат экзамена
+        #Результат экзамена
         if np.random.random() < success_chance:
             is_passed = 1
         else:
@@ -55,10 +55,8 @@ def monte_carlo(
 
         binary_results.append(is_passed)
 
-    # Преобразуем результаты в массив NumPy
     binary_results = np.array(binary_results)
 
-    # Рассчитываем процент успешных попыток
     total_probability = np.mean(binary_results) * 100
 
     return float(total_probability), binary_results
