@@ -1,4 +1,5 @@
 import tkinter as tk
+import tests.test_validation as tests
 from tkinter import ttk, messagebox
 
 from data.subjects import SUBJECTS_DATA
@@ -93,6 +94,7 @@ class InputWindow:
             "learned_tickets": self.learned_var.get(),
         }
 
+        tests.create_file(self)
         params, errors = validate(raw)
 
         if errors:
