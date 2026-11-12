@@ -1,7 +1,16 @@
 def calculate_p_ticket(learned, total, exam_type, rank, luck):
-    p_base = learned / total # базовая вероятность (бернулли)
+    # Защита от деления на ноль
+    if total <= 0:
+        return 0.0
+    p_base = learned / total # базовая вероятность (Бернулли)
+    # Коэффициент формы экзамена (диапазон 0.8 - 1.2)
     type_coef = {"Экзамен": 0.8, "Зачет с оценкой": 1.0, "Зачет": 1.2}.get(exam_type, 1.0)
-    subject_coef = 1.2 - (rank / 5) * 0.5 #сложность (0.7-1.2)
-    luck_coef = 0.9 + (luck / 10) * 0.2 # везучесть(0.92 - 1.1)
-    p_ticket = p_base * type_coef * subject_coef * luck_coef # часть формулы
+    # Коэффициент сложности предмета (симметричный диапазон 0.8 - 1.2)
+    # Ранг 3 (средний) = 1.0. Ранг 1 = 1.2 (+20%). Ранг 5 = 0.8 (-20%).
+    subject_coef = 1.0 - (rank - 3) * 0.1
+    # Симметричный коэффициент везучести (диапазон 0.9 - 1.1)
+    # 5 баллов = 1.0 (нейтрально). 10 баллов = 1.1 (+10%). 1 балл = 0.9 (-10%).
+    luck_coef = 1.0 + (luck - 5) * 0.02
+    # Итоговая вероятность
+    p_ticket = p_base * type_coef * subject_coef * luck_coef 
     return max(0.0, min(1.0, p_ticket))
