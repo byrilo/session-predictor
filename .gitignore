@@ -5,3 +5,4 @@ venv/
 .idea/
 .vscode/
 .pytest_cache/
+test_base_score_hist.png

@@ -1,8 +1,8 @@
 import numpy as np
 
-from ..model.luck import random_luck
-from ..model.ticket import calculate_p_ticket as calculate_ticket
-from ..model.base_score import base_score, SUBJECTS
+from model.luck import random_luck
+from model.ticket import calculate_p_ticket as calculate_ticket
+from model.base_score import base_score, SUBJECTS
 
 
 def monte_carlo(
@@ -19,6 +19,8 @@ def monte_carlo(
 
     # 1 — экзамен сдан, 0 — экзамен не сдан
     binary_results = []
+
+    base_scores = []
 
     for _ in range(simulations):
 
@@ -54,10 +56,11 @@ def monte_carlo(
             is_passed = 0
 
         binary_results.append(is_passed)
+        base_scores.append(success_chance)
 
     binary_results = np.array(binary_results)
-
+    base_scores = np.array(base_scores)
     total_probability = np.mean(binary_results) * 100
 
-    return float(total_probability), binary_results
+    return float(total_probability), binary_results, base_scores
 
