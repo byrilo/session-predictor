@@ -8,7 +8,6 @@ from model.luck import random_luck
 WEIGHT_BASE = 0.6        # Вес базового балла (знания)
 WEIGHT_TICKET = 0.3      # Вес вероятности вытянуть билет
 WEIGHT_LUCK = 0.1        # Вес удачи
-PASSING_THRESHOLD = 0.5  # Порог сдачи (проходной балл)
 
 def get_exam_probability(params):
     """
@@ -45,8 +44,7 @@ def get_exam_probability(params):
         # 4) итоговый балл (60% база, 30% билет, 10% удача)
         final_score = (base * WEIGHT_BASE) + (p_ticket * WEIGHT_TICKET) + (luck_normalized * WEIGHT_LUCK)
         
-        # 5) сдал или нет (порог 0.5)
-        if final_score >= PASSING_THRESHOLD:
+        if np.random.random() < final_score:
             results.append(1)
         else:
             results.append(0)
@@ -71,23 +69,49 @@ def calculate_session_probability(session_params_list):
         exam_probabilities.append(prob)
         print(f"  - Экзамен по предмету '{params['subject']}': {prob * 100:.1f}%")
     
-    # 2) симулируем всю сессию целиком 10 000 раз
-    session_results = []
-    for _ in range(10000):
-        passed_all = True 
-        
-        # Проходимся по каждому экзамену
-        for prob in exam_probabilities:
-            # если случайное число больше вероятности => экзамен завален
-            if np.random.random() > prob:
-                passed_all = False
-                break # Если один экзамен не сдан => сессия уже не сдана(метод Монте-Карло)
-                
-        if passed_all:
-            session_results.append(1) #сдал все 5
-        else:
-            session_results.append(0) #не сдал хотя бы один
+    # 2) Считаем итоговую вероятность перемножением 
+    session_probability = 1.0
+    for prob in exam_probabilities:
+        session_probability *= prob
             
-    # 3) Считаем итоговую вероятность сдачи сессии
-    session_probability = sum(session_results) / len(session_results)
+    # 3) Возвращаем итоговую вероятность
     return session_probability
+
+if __name__ == "__main__":
+    session_list = []
+    
+    print("ВВОД ДАННЫХ ДЛЯ 5 ЭКЗАМЕНОВ")
+    
+    for i in range(5):
+        print(f"\nЭкзамен {i+1} из 5")
+        
+        subject = input("Введите название предмета (например, Математика): ")
+        has_debts = input("Есть ли хвосты? (да/нет): ").lower() == "да"
+        hours = float(input("Сколько часов в день учил?: "))
+        missed = int(input("Сколько занятий пропустил?: "))
+        luck = int(input("Везучесть от 1 до 10: "))
+        total = int(input("Всего билетов: "))
+        learned = int(input("Сколько билетов выучил: "))
+        
+        rank = int(input("Сложность предмета (1-5): "))
+        exam_type = input("Тип экзамена (Экзамен/Зачет/Зачет с оценкой): ")
+
+        exam_params = {
+            "subject": subject,
+            "has_debts": has_debts,
+            "hours_per_day": hours,
+            "missed_lectures": missed,
+            "luck": luck,
+            "total_tickets": total,
+            "learned_tickets": learned,
+            "subject_rank": rank,
+            "exam_type": exam_type
+        }
+        
+        session_list.append(exam_params)
+
+    print("\nЗАПУСК СИМУЛЯЦИИ")
+    
+    result = calculate_session_probability(session_list)
+    
+    print(f"\nИТОГОВАЯ ВЕРОЯТНОСТЬ СДАТЬ СЕССИЮ: {result * 100:.1f}%")
