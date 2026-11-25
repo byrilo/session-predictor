@@ -1,20 +1,22 @@
+import math
+
 from data.subjects import SUBJECTS, SUBJECTS_DATA
 
 # Функция преобразования строки в целое
-# Принимат текст введённый пользователем
+# Принимает текст, введённый пользователем
 # Возвращает целое число или None
 def to_int(text):
-    text = text.strip()
+    text = str(text).strip()
     try:
         return int(text)
     except ValueError:
         return None
 
-# Функция преобразования строки в дробное число 
-# Принимат текст введённый пользователем
+# Функция преобразования строки в дробное число
+# Принимает текст, введённый пользователем
 # Возвращает дробное число или None
 def to_float(text):
-    text = text.strip().replace(",", ".")
+    text = str(text).strip().replace(",", ".")
     try:
         return float(text)
     except ValueError:
@@ -26,21 +28,25 @@ def to_float(text):
 # high - максимально допустимое значение
 # name - название поля для текста ошибки
 def check_range(value, low, high, name):
-    if value is None:
+    # nan проходит обе проверки на диапазон, поэтому отсекаем его отдельно
+    if value is None or (isinstance(value, float) and math.isnan(value)):
         return f"«{name}»: нужно ввести число"
     if value < low or value > high:
         return f"«{name}»: допустимо от {low} до {high}"
     return None
 
-# Функция которая проверяет параметры введённые пользователем
-# Принимает raw - словарь значений 
+# Функция которая проверяет параметры, введённые пользователем
+# raw - словарь значений
+# used_subjects - предметы, для которых данные уже добавлены в этом запуске
 # Возвращает params и errors
-def validate(raw):
+def validate(raw, used_subjects=()):
     errors = []
 
     subject = raw["subject"]
     if subject not in SUBJECTS:
         errors.append("Выберите предмет из списка")
+    elif subject in used_subjects:
+        errors.append(f"Данные по предмету «{subject}» уже добавлены")
 
     has_debts = bool(raw["has_debts"])
 
@@ -78,9 +84,9 @@ def validate(raw):
     params = {
         "hours_per_day": hours,
         "missed_lectures": missed,
-        "luck": luck,                 
-        "total_tickets": total,       
-        "learned_tickets": learned,   
+        "luck": luck,
+        "total_tickets": total,
+        "learned_tickets": learned,
         "subject": subject,
         "subject_rank": SUBJECTS_DATA[subject]["rank"],
         "exam_type": SUBJECTS_DATA[subject]["exam_type"],
@@ -91,11 +97,13 @@ def validate(raw):
 
 if __name__ == "__main__":
     test1 = {"subject": "Математика", "has_debts": False,
-            "hours_per_day": "3", "missed_lectures": "2", "luck": "7",
-            "total_tickets": "25", "learned_tickets": "18"}
+             "hours_per_day": "3", "missed_lectures": "2", "luck": "7",
+             "total_tickets": "25", "learned_tickets": "18"}
     test2 = {"subject": "Химия", "has_debts": True,
-           "hours_per_day": "3", "missed_lectures": "2", "luck": "0",
-           "total_tickets": "20", "learned_tickets": "25"}
+             "hours_per_day": "3", "missed_lectures": "2", "luck": "0",
+             "total_tickets": "20", "learned_tickets": "25"}
 
     print(validate(test1))
     print(validate(test2))
+    # Повторный ввод того же предмета должен дать ошибку
+    print(validate(test1, used_subjects={"Математика"}))
