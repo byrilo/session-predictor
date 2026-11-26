@@ -6,6 +6,110 @@ from data.subjects import SUBJECTS_DATA
 from gui.validation import SUBJECTS, validate
 
 
+HIGH_CHANCE_THRESHOLD = 0.75
+
+
+def _prob_to_percent(value):
+    return value * 100 if value <= 1.0 else value
+
+
+def build_recommendations(session_params_list, session_probability):
+    prob_percent = _prob_to_percent(session_probability)
+
+    if prob_percent >= HIGH_CHANCE_THRESHOLD * 100:
+        return []
+
+    recommendations = []
+
+    low_tickets = []
+    many_missed = []
+    little_hours = []
+    debts = []
+    low_luck = []
+
+    for params in session_params_list:
+        subject = params["subject"]
+
+        learned = params["learned_tickets"]
+        total = params["total_tickets"]
+        ratio = learned / total if total else 0
+        if ratio < 0.6:
+            low_tickets.append(f"{subject} (выучено {learned} из {total})")
+
+        if params["missed_lectures"] > 10:
+            many_missed.append(f"{subject} (пропущено {params['missed_lectures']})")
+
+        if params["hours_per_day"] < 2:
+            little_hours.append(subject)
+
+        if params["has_debts"]:
+            debts.append(subject)
+
+        if params["luck"] <= 3:
+            low_luck.append(subject)
+
+    if low_tickets:
+        recommendations.append(
+            "Подтяни билеты по предметам: " + ", ".join(low_tickets) +
+            ". Постарайся выучить хотя бы 70-80% билетов."
+        )
+
+    if many_missed:
+        recommendations.append(
+            "Слишком много пропусков: " + ", ".join(many_missed) +
+            ". Постарайся посещать оставшиеся занятия и переписать пропущенное."
+        )
+
+    if little_hours:
+        recommendations.append(
+            "Увеличь часы подготовки (сейчас меньше 2 ч/день) по: " +
+            ", ".join(little_hours) +
+            ". Даже 1-2 дополнительных часа в день дают заметный прирост."
+        )
+
+    if debts:
+        recommendations.append(
+            "Есть задолженности по: " + ", ".join(debts) +
+            ". Закрой хвосты до сессии — они сильно снижают шансы."
+        )
+
+    if low_luck and len(low_luck) == len(session_params_list):
+        recommendations.append(
+            "Везучесть ниже средней по всем предметам. Стоит подстраховаться "
+            "и выучить больше билетов."
+        )
+
+    if not recommendations:
+        recommendations.append(
+            "Шанс сдачи ниже желаемого. Попробуй увеличить часы подготовки "
+            "и долю выученных билетов — это даёт наибольший эффект."
+        )
+
+    return recommendations
+
+
+def format_recommendations(recommendations):
+    if not recommendations:
+        return ""
+    lines = ["Рекомендации для повышения шансов:"]
+    for rec in recommendations:
+        lines.append("- " + rec)
+    return "\n".join(lines)
+
+
+# Функция, которая показывает результат и рекомендации в одном окне
+def handle_input(params, recommendations_text=""):
+    lines = []
+    for key, value in params.items():
+        lines.append(f"{key}: {value}")
+
+    text = "\n".join(lines)
+    if recommendations_text:
+        text += "\n\n" + recommendations_text
+
+    messagebox.showinfo("Данные приняты", text)
+
+
 # Окно ввода параметров студента
 # Проверяет введённые данные и передаёт их дальше
 class InputWindow:
@@ -101,14 +205,20 @@ class InputWindow:
             messagebox.showerror("Проверьте ввод", "\n".join(errors))
             return
 
-        self.on_submit(params)
+        session_params_list = [params]
+        session_probability = 0.55
+
+        recommendations = build_recommendations(session_params_list, session_probability)
+        text = format_recommendations(recommendations)
+
+        self.on_submit(params, text)
 
     # Открывает окно и ждёт действий пользователя
     def run(self):
         self.root.mainloop()
 
 
-# Запуск окна для проверки, данные выводятся в терминал
+# Запуск окна для проверки
 if __name__ == "__main__":
-    window = InputWindow(on_submit=print)
+    window = InputWindow(on_submit=handle_input)
     window.run()
